@@ -33,27 +33,56 @@ st.markdown("Explorez les tendances des salaires à travers différentes visuali
 if st.checkbox("Afficher un aperçu des données"):
     #st.write(df.....)
     st.markdown("Premières lignes du jeu de données")
-    st.write(df.head()) # Affiche les 5 premières lignes
+    st.write(df.head(5)) # Affiche les 5 premières lignes
     
 
 
 #Statistique générales avec describe pandas 
 #votre code 
 st.subheader("📌 Statistiques générales")
-st.write(df.describe())
-
+st.write(df.describe()) #Decrit les focntion numerique avec moyenne quartiles max  min
+st.markdown("""
+**Interprétation :** Ici 4 vairbles deux qualitatives discrets et deux quantitative continue \n
+    Discrete = \n
+        work_year (L'années de travail)\n
+        remote_ratio (Statue teletravail)\n
+    Continue = \n
+        salary (salaire)\n
+        salary_in_usd (salaire en usd)\n
+""")
 
 ### 3. Distribution des salaires en France par rôle et niveau d'expérience, uilisant px.box et st.plotly_chart
 #votre code 
 st.subheader("📈 Distribution des salaires en France")
-df_fr = df[df['company_location'] == 'FR']
-categories = ['experience_level', 'employment_type', 'job_title', 'company_location',"company_location"]
+df_fr = df[df['company_location'] == 'FR'] #trier le jeu de donnees pour ne garder que les données ou company location et france
+boxplot_bar = px.box(
+    df_fr,
+    x='experience_level',
+    y='salary_in_usd',
+    title="Salaire moyen en france par niveau d'experience",
+    labels={"experience_level":"Niveau Experience", "salary_in_usd": "Salaire Moyen (USD)"},
+    color='experience_level'
+) # Creation du graphique box plot 
+st.plotly_chart(boxplot_bar)    
+    
+st.markdown("""
+**Interprétation :** 
+Distribution des salaires correles avec le niveaux d'experience en france
+""")
+
+
+
+
+### 4. Analyse des tendances de salaires :
+#### Salaire moyen par catégorie : en choisisant une des : ['experience_level', 'employment_type', 'job_title', 'company_location'], utilisant px.bar et st.selectbox 
+st.subheader("📈 Salaire moyen par catégorie")
+categories = ['experience_level', 'employment_type', 'job_title', 'company_location']
 choix_utilisateur = st.selectbox("Quelle catégorie souhaitez-vous analyser ?", categories)
-df_moyenne = df_fr.groupby(choix_utilisateur)['salary_in_usd'].mean().reset_index()
-df_moyenne = df_moyenne.sort_values(by='salary_in_usd', ascending=False)
+df_moyenne_choix = df.groupby(choix_utilisateur)['salary_in_usd'].mean().reset_index()
+df_moyenne_choix = df_moyenne_choix.sort_values(by='salary_in_usd', ascending=False)
 
 fig_bar = px.bar(
-    df_moyenne,
+    df_moyenne_choix,
     x=choix_utilisateur,
     y='salary_in_usd',
     title=f"Salaire moyen par {choix_utilisateur}",
@@ -64,25 +93,24 @@ fig_bar = px.bar(
 
 st.plotly_chart(fig_bar)
 
-
-
-
-### 4. Analyse des tendances de salaires :
-#### Salaire moyen par catégorie : en choisisant une des : ['experience_level', 'employment_type', 'job_title', 'company_location'], utilisant px.bar et st.selectbox 
-
-
-
+st.subheader("🔗 Corrélations entre variables numériques")
 ### 5. Corrélation entre variables
 # Sélectionner uniquement les colonnes numériques pour la corrélation
 #votre code 
+df_numeric = df.select_dtypes(include=[np.number])
+
+
 
 # Calcul de la matrice de corrélation
 #votre code
-
+correlations_Pearson=df_numeric.corr() 
+st.write(correlations_Pearson)
 
 # Affichage du heatmap avec sns.heatmap
 #votre code 
-st.subheader("🔗 Corrélations entre variables numériques")
+fig, ax = plt.subplots()
+sns.heatmap(correlations_Pearson,annot=True, cmap='coolwarm', ax=ax) # annot=True permet d'annoter chaques carre ma heat map
+st.pyplot(fig)
 
 
 
@@ -94,13 +122,66 @@ st.subheader("🔗 Corrélations entre variables numériques")
 #utilisez px.line
 #votre code 
 
+top10_names = df['job_title'].value_counts().head(10).index # On utilise value_counts() pour compter l'occurrence de chaque métier
 
+df_top10 = df[df['job_title'].isin(top10_names)]
+
+salaire_moyen_evolution = df_top10.groupby(['work_year', 'job_title'])['salary_in_usd'].mean().reset_index()
+
+graph_evolution_line = px.line(
+    salaire_moyen_evolution,
+    x='work_year',
+    y='salary_in_usd',
+    color='job_title', # C'est ici qu'on crée une ligne par métier !
+    title="Évolution du salaire moyen par poste (Top 10)"
+)
+
+st.plotly_chart(graph_evolution_line)
+
+graph_evolution_bar = px.bar(
+    salaire_moyen_evolution,
+    x='work_year',
+    y='salary_in_usd',
+    color='job_title', # C'est ici qu'on crée une ligne par métier !
+    title="Évolution du salaire moyen par poste (Top 10)"
+)
+
+st.plotly_chart(graph_evolution_bar)
+
+
+#salaire_moyen_top10_job = top10_job.groupby('work_year')['salary_in_usd'].mean().sort_values(ascending=False)
+#graph_salaire_moyen_annes = px.line(
+    #salaire_moyen_top10_job,
+    #x='work_year',
+    #y='salary_in_usd'
+#)
+#st.plotly_chart(graph_salaire_moyen_annes)
+
+ 
 
 
 
 ### 7. Salaire médian par expérience et taille d'entreprise
 # utilisez median(), px.bar
 #votre code 
+
+st.subheader(" Salaire médian par expérience et taille d'entreprise")
+df_median = df.groupby(['experience_level', 'company_size'])['salary_in_usd'].median().reset_index()
+fig_median = px.bar(
+    df_median,
+    x='experience_level',
+    y='salary_in_usd',
+    color='company_size',
+    barmode='group', 
+    title="Salaire médian par niveau d'expérience et taille d'entreprise",
+    category_orders={
+        "experience_level": ["EN", "MI", "SE", "EX"],
+        "company_size": ["S", "M", "L"]
+    },
+    color_discrete_sequence=px.colors.qualitative.Pastel
+)
+
+st.plotly_chart(fig_median)
 
 
 
@@ -109,14 +190,42 @@ st.subheader("🔗 Corrélations entre variables numériques")
 #Filtrer les données par salaire utilisant st.slider pour selectionner les plages 
 #votre code 
 
+st.subheader("Filtrer par tranche de salaire")
+min_sal = int(df['salary_in_usd'].min())
+max_sal = int(df['salary_in_usd'].max())
+intervalle_salaire = st.slider(
+    "Sélectionnez une plage de salaires (USD)",
+    min_value=min_sal,
+    max_value=max_sal,
+    value=(min_sal, max_sal) # Valeur par défaut : toute la plage
+)
+
 
 
 
 ### 9.  Impact du télétravail sur le salaire selon le pays
 
+top_pays = df['company_location'].value_counts().head(10).index
+df_top10_pays = df[df['company_location'].isin(top_pays)]
+df_impact = df_top10_pays.groupby(['company_location', 'remote_ratio'])['salary_in_usd'].mean().reset_index()
 
+fig_impact = px.bar(
+    df_impact,
+    x='company_location', # On utilise la localisation ici
+    y='salary_in_usd',
+    color='remote_ratio',
+    barmode='group',
+    title="Impact du télétravail sur le salaire selon le pays"
+)
 
+st.plotly_chart(fig_impact)
 
 ### 10. Filtrage avancé des données avec deux st.multiselect, un qui indique "Sélectionnez le niveau d'expérience" et l'autre "Sélectionnez la taille d'entreprise"
 #votre code 
 
+
+st.subheader(" Filtrage croisé expérience et taille d'entreprise")
+options_xp = df['experience_level'].unique()
+options_taille = df['company_size'].unique()
+choix_xp = st.multiselect("Sélectionnez le niveau d'expérience", options_xp, default=options_xp)
+choix_taille = st.multiselect("Sélectionnez la taille d'entreprise", options_taille, default=options_taille)
