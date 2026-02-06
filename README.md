@@ -34,3 +34,12 @@ Les données utilisées pour cette analyse proviennent de la plateforme **Kaggle
    `pip install -r requirements.txt`
 3. Lancez l'application :
    `streamlit run application.py`
+
+
+
+
+## Lien application Streamlit & Github
+   
+lien github = https://github.com/MaxenceLR/projet_notebook
+
+lien application streamlit = https://projetnotebook-aeyhk4n6nk2jjybcnoxn58.streamlit.app/
