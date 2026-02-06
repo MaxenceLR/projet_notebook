@@ -67,7 +67,7 @@ st.plotly_chart(boxplot_bar)
     
 st.markdown("""
 **Interprétation :** 
-Distribution des salaires correles avec le niveaux d'experience en france
+Distribution des salaires corrélés avec le niveau d'expérience en France
 """)
 
 
@@ -109,7 +109,7 @@ st.write(correlations_Pearson)
 
 st.markdown("""
 **Interprétation :** 
-Ici aucune correlation est assez importante pour etre etudier essayons avec deux autre variables
+Ici aucune corrélation n'est assez importante pour être étudiée. Essayons avec deux autres variables
 """)
 # Affichage du heatmap avec sns.heatmap
 #votre code 
@@ -127,7 +127,7 @@ st.pyplot(fig)
 
 st.markdown("""
 **Interprétation :** 
-Ici aucune correlation entre la variable salaire et celui du teletravil essayons de voir si le salaire depend de l'experience
+Ici aucune corrélation entre la variable salaire et celui du télétravail. Essayons de voir si le salaire dépend de l'expérience
 """)
 
 
