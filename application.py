@@ -103,16 +103,61 @@ df_numeric = df.select_dtypes(include=[np.number])
 
 # Calcul de la matrice de corrélation
 #votre code
+st.subheader("matrice de corrélation")
 correlations_Pearson=df_numeric.corr() 
 st.write(correlations_Pearson)
 
+st.markdown("""
+**Interprétation :** 
+Ici aucune correlation est assez importante pour etre etudier essayons avec deux autre variables
+""")
 # Affichage du heatmap avec sns.heatmap
 #votre code 
 fig, ax = plt.subplots()
 sns.heatmap(correlations_Pearson,annot=True, cmap='coolwarm', ax=ax) # annot=True permet d'annoter chaques carre ma heat map
 st.pyplot(fig)
 
+st.subheader (" Matrice de corrélation Salaire/Remote ")
+corrélations_salaire_remote=df[["salary_in_usd","remote_ratio"]]
+correlations_Pearson_salaire_remote=corrélations_salaire_remote.corr() 
+st.write(correlations_Pearson_salaire_remote)
+fig, ax = plt.subplots()
+sns.heatmap(correlations_Pearson_salaire_remote,annot=True, cmap='coolwarm', ax=ax) # annot=True permet d'annoter chaques carre ma heat map
+st.pyplot(fig)
 
+st.markdown("""
+**Interprétation :** 
+Ici aucune correlation entre la variable salaire et celui du teletravil essayons de voir si le salaire depend de l'experience
+""")
+
+
+st.subheader(" Matrice de corrélation Salaire/Expérience")
+
+df_corr = df.copy()
+mapping_xp = {"EN": 1, "MI": 2, "SE": 3, "EX": 4}
+df_corr['experience_level_num'] = df_corr['experience_level'].map(mapping_xp)
+
+colonnes_cibles = ["salary_in_usd", "experience_level_num"]
+correlations_Pearson = df_corr[colonnes_cibles].corr()
+
+st.write(correlations_Pearson)
+
+fig, ax = plt.subplots()
+sns.heatmap(correlations_Pearson, annot=True, cmap='coolwarm', ax=ax)
+st.pyplot(fig)
+
+st.markdown("""
+**Interprétation :** 
+Ici il y a une correlation moyenne de 0.44 soit 44% entre l'experience d'un employer et son salaire donc le salaire a tendance à augmenter avec l'expérience. \n
+
+Cependant, l'expérience n'est pas le seul facteur, car elle n'explique qu'une partie de la variabilité totale des revenus. \n
+
+Le pouvoir explicatif ($R^2$) : Pour savoir à quel point l'expérience "explique" la variance du salaire, on doit élever $r$ au carré : 0.44*0.44 = 0.19 \n
+
+Cela signifie que l'expérience explique environ 19% de la variation des salaires. Les 81% restants dépendent d'autres facteurs (le pays, la taille de l'entreprise, le titre du poste
+
+
+""")
 
 
 ### 6. Analyse interactive des variations de salaire
@@ -147,7 +192,10 @@ graph_evolution_bar = px.bar(
 )
 
 st.plotly_chart(graph_evolution_bar)
-
+st.markdown("""
+**Interprétation :** 
+Ici on voit une augmentation du nombre de metier dans la data soit un croissance dans ce domaines
+""")
 
 #salaire_moyen_top10_job = top10_job.groupby('work_year')['salary_in_usd'].mean().sort_values(ascending=False)
 #graph_salaire_moyen_annes = px.line(
