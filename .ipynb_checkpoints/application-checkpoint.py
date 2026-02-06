@@ -166,6 +166,7 @@ Cela signifie que l'expérience explique environ 19% de la variation des salaire
 # calcule du salaire moyen par an
 #utilisez px.line
 #votre code 
+st.subheader(" Evolution des salaires pour les 10 postes les plus courants")
 
 top10_names = df['job_title'].value_counts().head(10).index # On utilise value_counts() pour compter l'occurrence de chaque métier
 
@@ -194,7 +195,33 @@ graph_evolution_bar = px.bar(
 st.plotly_chart(graph_evolution_bar)
 st.markdown("""
 **Interprétation :** 
-Ici on voit une augmentation du nombre de metier dans la data soit un croissance dans ce domaines
+Les graphiques révèlent une croissance structurelle du marché de la Data entre 2020 et 2023. On observe non seulement une augmentation généralisée des salaires moyens (notamment pour les Data Analysts et Engineers), mais aussi une diversification accrue des métiers.\n
+
+Alors qu'en 2020 le marché se concentrait sur quelques rôles clés, 2023 montre l'émergence de postes plus spécialisés comme les Applied Scientists ou Data Architects. Le creux observé en 2021 suggère une phase de transition post-pandémie, suivie d'une accélération nette de la valeur accordée à ces expertises.
+""")
+
+
+st.subheader("Évolution du volume d'emplois par an")
+
+
+
+df_count_year = df.groupby('work_year').size().reset_index(name='nombre_d_emplois') # .size() compte les lignes, reset_index redonne un format de tableau propre
+
+
+fig_volume = px.bar(
+    df_count_year,
+    x='work_year',
+    y='nombre_d_emplois',
+    title="Nombre total de postes répertoriés par année",
+    text_auto=True, # Cette option affiche le chiffre exact au-dessus de chaque barre
+    labels={'work_year': 'Année', 'nombre_d_emplois': "Nombre d'offres"},
+    color_discrete_sequence=['#636EFA'] # Un beau bleu pour rester cohérent
+)
+st.plotly_chart(fig_volume)
+
+# 4. Ton interprétation mise à jour
+st.markdown("""
+** Analyse du volume ** : On constate que le nombre de postes est passé de 76 en 2020 à 1785 en 2023. Cela confirme une croissance exponentielle de la demande en talents Data.
 """)
 
 #salaire_moyen_top10_job = top10_job.groupby('work_year')['salary_in_usd'].mean().sort_values(ascending=False)
@@ -214,6 +241,7 @@ Ici on voit une augmentation du nombre de metier dans la data soit un croissance
 #votre code 
 
 st.subheader(" Salaire médian par expérience et taille d'entreprise")
+
 df_median = df.groupby(['experience_level', 'company_size'])['salary_in_usd'].median().reset_index()
 fig_median = px.bar(
     df_median,
@@ -230,29 +258,39 @@ fig_median = px.bar(
 )
 
 st.plotly_chart(fig_median)
+st.markdown("""
+Le graphique montre une progression "en escalier" très nette. Le passage du niveau SE (Senior) au niveau EX (Executive) marque le bond salarial le plus important, doublant presque les revenus de début de carrière (EN).
 
+La domination des entreprises moyennes (M) : Comme tu l'as remarqué, les barres jaunes (entreprises M) sont souvent les plus hautes. Plusieurs raisons peuvent expliquer cela :
 
+Fréquence : C'est effectivement le type de société le plus représenté dans les données Data Science actuelles (souvent des startups en pleine croissance ou des boîtes de la tech spécialisées).
 
+Compétition : Ces entreprises paient parfois mieux que les très grands groupes (L) pour attirer les meilleurs talents face à la concurrence.
 
-### 8. Ajout de filtres dynamiques
-#Filtrer les données par salaire utilisant st.slider pour selectionner les plages 
-#votre code 
+L'anomalie des grandes entreprises (L) au niveau EX : Il est curieux de voir que pour le niveau Expert, les entreprises moyennes semblent mieux rémunérer que les grandes. Cela peut s'expliquer par des bonus ou des stocks-options (non comptés ici) ou par le fait que les postes de direction dans des structures agiles (M) sont très valorisés.
+""")
 
-st.subheader("Filtrer par tranche de salaire")
-min_sal = int(df['salary_in_usd'].min())
-max_sal = int(df['salary_in_usd'].max())
-intervalle_salaire = st.slider(
-    "Sélectionnez une plage de salaires (USD)",
-    min_value=min_sal,
-    max_value=max_sal,
-    value=(min_sal, max_sal) # Valeur par défaut : toute la plage
-)
+st.write("### Répartition des entreprises par taille")
+# Compte le nombre d'entreprises par taille
+count_size = df['company_size'].value_counts().reset_index()
+fig_pie = px.pie(count_size, values='count', names='company_size', title="Proportion des tailles d'entreprises")
+st.plotly_chart(fig_pie)
 
+st.divider() # Ajoute une ligne de séparation
+st.header("Synthèse Finale")
 
+col1, col2 = st.columns(2)
 
+with col1:
+    st.success("**Croissance** : Le volume d'emplois et les salaires moyens sont en hausse constante depuis 2021.")
+    st.success("**Expérience** : Les profils 'Executive' voient leurs revenus doubler par rapport aux profils 'Entry'.")
+
+with col2:
+    st.info("**Structure** : Le marché est ultra-dominé par les entreprises de taille moyenne (84%).")
+    st.info("**Compétitivité** : Les entreprises 'M' rivalisent, voire dépassent les grandes structures 'L' en termes de salaire médian.")
 
 ### 9.  Impact du télétravail sur le salaire selon le pays
-
+st.subheader("Impact du télétravail sur le salaire selon le pays")
 top_pays = df['company_location'].value_counts().head(10).index
 df_top10_pays = df[df['company_location'].isin(top_pays)]
 df_impact = df_top10_pays.groupby(['company_location', 'remote_ratio'])['salary_in_usd'].mean().reset_index()
@@ -268,6 +306,32 @@ fig_impact = px.bar(
 
 st.plotly_chart(fig_impact)
 
+
+### 8. Ajout de filtres dynamiques
+#Filtrer les données par salaire utilisant st.slider pour selectionner les plages 
+#votre code 
+
+st.subheader(" Filtres dynamiques")
+
+st.subheader("Filtrer par tranche de salaire")
+min_sal = int(df['salary_in_usd'].min())
+max_sal = int(df['salary_in_usd'].max())
+intervalle_salaire = st.slider(
+    "Sélectionnez une plage de salaires (USD)",
+    min_value=min_sal,
+    max_value=max_sal,
+    value=(min_sal, max_sal) # Valeur par défaut : toute la plage
+)
+
+# On crée le DataFrame filtré en utilisant les valeurs du slider
+df_filtre_salaire = df[df['salary_in_usd'].between(intervalle_salaire[0], intervalle_salaire[1])]
+
+st.write(f"Il y a **{df_filtre_salaire.shape[0]}** employer qui correspondent à vos critères.")
+st.dataframe(df_filtre_salaire)
+
+
+
+
 ### 10. Filtrage avancé des données avec deux st.multiselect, un qui indique "Sélectionnez le niveau d'expérience" et l'autre "Sélectionnez la taille d'entreprise"
 #votre code 
 
@@ -277,3 +341,29 @@ options_xp = df['experience_level'].unique()
 options_taille = df['company_size'].unique()
 choix_xp = st.multiselect("Sélectionnez le niveau d'expérience", options_xp, default=options_xp)
 choix_taille = st.multiselect("Sélectionnez la taille d'entreprise", options_taille, default=options_taille)
+
+# Filtrage du DataFrame en fonction des sélections
+# On utilise .isin() pour vérifier si la valeur de la ligne est dans la liste des choix
+df_selection = df[
+    (df['experience_level'].isin(choix_xp)) & 
+    (df['company_size'].isin(choix_taille))
+]
+
+# Création du graphique qui compte les employés
+# px.histogram compte automatiquement le nombre de lignes
+fig_counts = px.histogram(
+    df_selection, 
+    x='experience_level', 
+    color='company_size', 
+    barmode='group',
+    title="Nombre d'employés par niveau d'expérience et taille d'entreprise",
+    labels={'experience_level': 'Niveau d\'expérience', 'count': 'Nombre d\'employés', 'company_size': 'Taille'},
+    category_orders={"experience_level": ["EN", "MI", "SE", "EX"], "company_size": ["S", "M", "L"]},
+    color_discrete_sequence=px.colors.qualitative.Safe
+)
+
+#  Affichage du graphique
+st.plotly_chart(fig_counts)
+
+# afficher le nombre total après filtrage
+st.write(f"Affichage de **{len(df_selection)}** employés correspondants.")
